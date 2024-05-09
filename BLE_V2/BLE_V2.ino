@@ -5,6 +5,7 @@
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
+BLECharacteristic* pCharacteristicWrite = NULL; 
 BLEDescriptor* pDescr;
 BLE2902* pBLE2902;
 
@@ -17,6 +18,7 @@ uint32_t value = 0;
 
 #define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+#define CHARACTERISTIC_WRITE_UUID "3b486277-d8fe-4757-96ec-b465c0aca0f5"
 
 class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
@@ -41,10 +43,15 @@ void setup() {
   // Create the BLE Service
   BLEService* pService = pServer->createService(SERVICE_UUID);
 
-  // Create a BLE Characteristic
+  // Create a BLE Characteristic (Notify)
   pCharacteristic = pService->createCharacteristic(
     CHARACTERISTIC_UUID,
     BLECharacteristic::PROPERTY_NOTIFY);
+
+  // Create a BLE Characteristic (Write)
+  pCharacteristicWrite = pService->createCharacteristic(
+    CHARACTERISTIC_WRITE_UUID,
+    BLECharacteristic::PROPERTY_WRITE);
 
   // Create a BLE Descriptor
   pDescr = new BLEDescriptor((uint16_t)0x2901);
@@ -67,14 +74,15 @@ void setup() {
   Serial.println("Waiting a client connection to notify...");
 }
 
+
 void loop() {
   // notify changed value
   if (deviceConnected) {
-    Serial.println("Device is connected");
-    const char* message = "Hello from ESP32!";
-    pCharacteristic->setValue(message);
-    pCharacteristic->notify();
-    delay(5000);
+    // sending message throu BLE
+    // const char* message = "Hello from ESP32!";
+    // pCharacteristic->setValue(message);
+    // pCharacteristic->notify();
+    delay(500);
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -89,5 +97,13 @@ void loop() {
     // do stuff here on connecting
     oldDeviceConnected = deviceConnected;
     Serial.println("Device connecting");
+  }
+  
+  // Read any incoming data from the characteristic write
+  if (pCharacteristicWrite->getValue().length() > 0) {
+    Serial.print("Received message: ");
+    Serial.println(pCharacteristicWrite->getValue().c_str());
+    // Clear the characteristic write value to avoid reprocessing
+    pCharacteristicWrite->setValue("");
   }
 }
