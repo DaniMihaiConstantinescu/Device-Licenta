@@ -2,6 +2,8 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include "led_functions.h"
+#include "read_handle.h"
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
@@ -13,12 +15,10 @@ bool deviceConnected = false;
 bool oldDeviceConnected = false;
 uint32_t value = 0;
 
-// See the following for generating UUIDs:
-// https://www.uuidgenerator.net/
-
 #define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 #define CHARACTERISTIC_WRITE_UUID "3b486277-d8fe-4757-96ec-b465c0aca0f5"
+
 
 class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
@@ -32,6 +32,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
 
 void setup() {
   Serial.begin(115200);
+  setupLeds();
 
   // Create the BLE Device
   BLEDevice::init("ESP32");
@@ -101,9 +102,7 @@ void loop() {
   
   // Read any incoming data from the characteristic write
   if (pCharacteristicWrite->getValue().length() > 0) {
-    Serial.print("Received message: ");
-    Serial.println(pCharacteristicWrite->getValue().c_str());
-    // Clear the characteristic write value to avoid reprocessing
-    pCharacteristicWrite->setValue("");
+    handleInput(pCharacteristicWrite, pCharacteristic);
   }
+
 }
