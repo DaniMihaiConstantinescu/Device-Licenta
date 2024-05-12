@@ -4,7 +4,7 @@
 int getCase(std::string mess){
 
   /*
-    0 - get info about device
+    0 - get device type
     1 - led on
     2 - led of
   */
@@ -36,7 +36,7 @@ void handleInput(BLECharacteristic* pCharacteristicWrite, BLECharacteristic* pCh
   switch(type){
     case 0:
       Serial.println("0 case");
-      handleNotify("init info", pCharacteristic);
+      handleNotify("{type:light}", pCharacteristic);
       break;
     case 1:
       Serial.println("1 case");
