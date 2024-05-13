@@ -1,22 +1,40 @@
 #include <string>
 #include "read_handle.h"
 
-int getCase(std::string mess){
+bool extractInfo(const std::string& input, std::string& info) {
+    // Check if the string starts and ends with '{' and '}'
+    if (input.front() == '{' && input.back() == '}') {
+        // Find the position of '=' character
+        size_t pos = input.find('=');
+        if (pos != std::string::npos) {
+            // Extract the information after '='
+            info = input.substr(pos + 1, input.length() - pos - 2);
+            return true; // Return true if extraction is successful
+        }
+    }
+    return false; // Return false if the format is incorrect or extraction fails
+}
 
-  /*
-    0 - get device type
-    1 - led on
-    2 - led of
-  */
+int getCase(std::string mess) {
+    std::string info = "";
 
-  if(mess == "0")
-    return 0;
-  if(mess == "1")
-    return 1;
-  if(mess == "2")
-  return 2;
+    /*
+      0 - get device type
+      1 - led on
+      2 - led off
+    */
 
-  return -1;
+    if (mess == "0") {
+        return 0;
+    } else if (extractInfo(mess, info)) {
+        if (info == "on") {
+            return 1;
+        } else if (info == "off") {
+            return 2;
+        }
+    }
+
+    return -1; 
 }
 
 void handleNotify(std::string message, BLECharacteristic* pCharacteristic) {
@@ -39,11 +57,11 @@ void handleInput(BLECharacteristic* pCharacteristicWrite, BLECharacteristic* pCh
       handleNotify("{type:light}", pCharacteristic);
       break;
     case 1:
-      Serial.println("1 case");
+      Serial.println("case 1");
       powerOnLed(2);
       break;
     case 2:
-      Serial.println("2 case");
+      Serial.println("case 2");
       powerOffLed(2);
       break;
     default:
