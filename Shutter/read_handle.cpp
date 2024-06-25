@@ -18,6 +18,10 @@ bool extractInfo(const std::string& input, std::string& info) {
 int getCase(std::string mess) {
     std::string info = "";
 
+    extractInfo(mess, info);
+    Serial.println("Info:");
+    Serial.println(info.c_str());
+
     /*
       0 - get device type
       1 - led on
@@ -27,9 +31,9 @@ int getCase(std::string mess) {
     if (mess == "0") {
         return 0;
     } else if (extractInfo(mess, info)) {
-        if (info == "on") {
+        if (info == "up") {
             return 1;
-        } else if (info == "off") {
+        } else if (info == "down") {
             return 2;
         }
     }
@@ -54,14 +58,18 @@ void handleInput(BLECharacteristic* pCharacteristicWrite, BLECharacteristic* pCh
   switch(type){
     case 0:
       Serial.println("0 case");
-      handleNotify("{type:light}", pCharacteristic);
+      handleNotify("{type:shutter}", pCharacteristic);
       break;
     case 1:
       Serial.println("case 1");
       powerOnLed(2);
+      delay(2000);   
+      powerOffLed(2);
       break;
     case 2:
       Serial.println("case 2");
+      powerOnLed(2);
+      delay(2000);   
       powerOffLed(2);
       break;
     default:
